@@ -7,6 +7,8 @@ using namespace std;
 #define END_TEMP 0.1
 #define MT_MAX (double)0xffffffff
 
+// utilities
+
 std::mt19937 mt;
 chrono::system_clock::time_point start;
 
@@ -32,6 +34,30 @@ double elapsed_seconds() {
     return static_cast<double>(chrono::duration_cast<chrono::microseconds>(chrono::system_clock::now() - start).count() / 1e6);
 }
 
+template <typename T>
+auto find_iter(vector<T> &v, T val) {
+    return find(v.begin(), v.end(), val);
+}
+
+template <typename T>
+bool contains(vector<T> &v, T val) {
+    return find_iter(v, val) != v.end();
+}
+
+// log
+
+void write_score_log(vector<int> &score_log) {
+    ofstream file_os;
+    string file_name = "score.log";
+    file_os.open(file_name, ios::out);
+
+    for (int e : score_log) file_os << e << " ";
+    file_os << endl;
+    file_os.close();
+}
+
+// optimize
+
 double update_temp(double progress) {
     return pow(START_TEMP, (1 - progress)) * pow(END_TEMP, progress);
 }
@@ -56,6 +82,7 @@ int main() {
 
     // solve;
     {
+        vector<int> score_log;
         int loop_count = 0;
         double progress = 0;
         double temp = START_TEMP;
@@ -65,6 +92,7 @@ int main() {
             if (is_interval) {
                 progress = elapsed_seconds() / TIME_LIMIT;
                 temp = update_temp(progress);
+                score_log.push_back(state.get_score());
             }
 
             double current_score = state.get_score();
@@ -81,6 +109,8 @@ int main() {
 
             loop_count++;
         }
+
+        write_score_log(score_log);
     }
 
     // output;
