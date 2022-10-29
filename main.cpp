@@ -115,41 +115,38 @@ struct State {
 State solve(State initial_state) {
     auto state = initial_state;
 
-    // solve;
-    {
-        vector<int> score_log;
-        int loop_count = 0;
-        double progress = 0;
-        double current_temp = START_TEMP;
+    vector<int> score_log;
+    int loop_count = 0;
+    double progress = 0;
+    double current_temp = START_TEMP;
 
-        while (progress < 1) {
-            bool is_interval = loop_count % LOOP_INTERVAL == 0;
-            if (is_interval) {
-                progress = elapsed_seconds() / TIME_LIMIT;
-                current_temp = update_temp(progress);
-                score_log.push_back(state.get_score());
-            }
-
-            double current_score = state.get_score();
-
-            // perform action;
-            state.perform_action();
-
-            double new_score = state.get_score();
-
-            if (should_adopt_new_state(current_score, new_score, current_temp)) {
-                // adopt;
-                state.adopt_actions();
-            } else {
-                // rollback;
-                state.rollback();
-            }
-
-            loop_count++;
+    while (progress < 1) {
+        bool is_interval = loop_count % LOOP_INTERVAL == 0;
+        if (is_interval) {
+            progress = elapsed_seconds() / TIME_LIMIT;
+            current_temp = update_temp(progress);
+            score_log.push_back(state.get_score());
         }
 
-        write_score_log(score_log);
+        double current_score = state.get_score();
+
+        // perform action;
+        state.perform_action();
+
+        double new_score = state.get_score();
+
+        if (should_adopt_new_state(current_score, new_score, current_temp)) {
+            // adopt;
+            state.adopt_actions();
+        } else {
+            // rollback;
+            state.rollback();
+        }
+
+        loop_count++;
     }
+
+    write_score_log(score_log);
 
     return state;
 }
@@ -161,6 +158,10 @@ int main() {
 
     State state = State();
     auto answer_state = solve(state);
+
+    vector<State> cand_states;
+    for (int i = 0; i < 10; i++) {
+    }
 
     // output;
 }
