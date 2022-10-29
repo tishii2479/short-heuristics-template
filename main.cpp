@@ -5,7 +5,7 @@ using namespace std;
 #define LOOP_INTERVAL 100
 #define START_TEMP 1000
 #define END_TEMP 0.1
-#define MT_MAX (double)0xffffffff
+#define MT_MAX 0xffffffff
 
 // utilities
 
