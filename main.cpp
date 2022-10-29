@@ -5,6 +5,7 @@ using namespace std;
 #define LOOP_INTERVAL 100
 #define START_TEMP 1000
 #define END_TEMP 0.1
+#define MT_MAX (double)0xffffffff
 
 std::mt19937 mt;
 chrono::system_clock::time_point start;
@@ -20,7 +21,7 @@ int gen_range(int r) {
 
 double gen_f(double l, double r) {
     assert(l < r);
-    return l + (double)mt() / INT_FAST32_MAX * (r - l);
+    return l + (double)mt() / MT_MAX * (r - l);
 }
 
 double gen_f(double r) {
