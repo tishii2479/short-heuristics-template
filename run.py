@@ -1,67 +1,33 @@
 import multiprocessing
-import pipes
 import subprocess
-from typing import Tuple
 
-CASE = 100
-TL = 6.0
+total_cases = 100
 
 
-def execute_case(seed):
-    input_file_path = f"tools/in/{seed:04}.txt"
-    output_file_path = f"tools/out/{seed:04}.txt"
-
-    with open(input_file_path) as fin:
-        with open(output_file_path, "w") as fout:
-            subprocess.run(
-                ["./a.out"],
-                stdin=fin,
-                stdout=fout,
-                stderr=subprocess.PIPE,
-                timeout=TL,
-            )
-            output = None
-            # TODO: Read score
-            # pipefile = f"tools/out/pipefile_{seed:04}"
-            # with pipes.Template().open(pipefile, "w") as p:
-            #     subprocess.run(
-            #         ["tools/target/release/vis", input_file_path, output_file_path],
-            #         stdout=p,
-            #         timeout=TL,
-            #     )
-            # output = open(pipefile).read()
-            assert output
-    return seed, output
+def run_case(seed):
+    proc = subprocess.run(
+        f"./a.out < tools/in/{seed:04}.txt > out/{seed:04}.txt",
+        shell=True,
+        stderr=subprocess.PIPE,
+    )
+    stderr = proc.stderr.decode("utf8")
+    for line in stderr.splitlines():
+        if len(line) >= 6 and line[:6].lower() == "score:":
+            score = int(line.split()[-1])
+    return seed, score
 
 
-def main() -> None:
-    scores = []
-    count = 0
-    total = 0
-
-    subprocess.run("cargo build --release", shell=True)
+def main():
+    subprocess.run("g++-11 -std=c++17 main.cpp", shell=True)
     with multiprocessing.Pool(max(1, multiprocessing.cpu_count() - 2)) as pool:
-        for seed, score in pool.imap_unordered(execute_case, range(CASE)):
-            count += 1
-            try:
-                scores.append((int(score.split()[2]), f"{seed:04}"))
-                total += scores[-1][0]
-            except ValueError:
-                print(seed, "ValueError", flush=True)
-                print(score, flush=True)
-                exit()
-            except IndexError:
-                print(seed, "IndexError", flush=True)
-                print(f"error: {score}", flush=True)
-                exit()
-
+        score_sum = 0
+        for seed, score in pool.map(run_case, range(total_cases)):
+            score_sum += score
             print(
-                f"case {seed:3}: (score: {scores[-1][0]:7}, current ave: {total / count:10.2f})",
-                flush=True,
+                f"Seed: {seed}, Score: {score}, Current Average: {score_sum / (seed + 1)}"
             )
 
-    average_score = total / CASE
-    print(f"average_score: {average_score}")
+    print(f"Average {score_sum / total_cases}")
 
 
 if __name__ == "__main__":
